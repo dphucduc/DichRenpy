@@ -1,0 +1,25 @@
+RenPyVN 2.6.0.7 — GreetingRoleLock
+
+Lỗi được tái hiện từ ảnh người dùng:
+scripts/a_prologue/prologue1.rpy:178 — Vincent (p) → Emma (em), khóa SELF=con, ADDR=dì.
+Nguồn hiển thị "...Hey there", bản dịch "...Cháu chào cô!" vẫn có chứng nhận kiểm tra riêng.
+
+Nguyên nhân đã xác nhận trong mã: các kiểm tra chủ ngữ/lời gọi cũ phụ thuộc nguồn có I/you. Lời chào ngắn không có chúng, nhưng tiếng Việt thêm "cháu/cô"; bộ kiểm tra bỏ lọt và một kết quả AUDIT true có thể cấp chứng nhận.
+
+Bản sửa:
+- Kiểm tra vai rõ trong lời chào trực tiếp, kể cả đại từ tiếng Việt được thêm vào: cháu chào cô, con chào cô, cháu chào dì và dì chào con đều bị chặn dưới khóa con/dì.
+- Con chào dì, chào dì ạ hoặc chào vẫn hợp lệ về khóa; không buộc câu nào cũng có đầy đủ đại từ và không tự viết lại lời thoại.
+- Kiểm tra áp dụng trước AUDIT và khi chứng nhận/duyệt. AUDIT trả tất cả true không thể miễn lỗi địa phương này.
+- Khóa theo cảnh và chiều speaker→listener vẫn được giữ; p→em và em→p được kiểm tra riêng.
+- Prompt dịch/kiểm tra nêu rõ đại từ thêm vào câu không có I/you cũng phải dùng đúng vai và khóa.
+- Mở lại dự án tự rà các bản dịch pipeline đã lưu, gỡ chứng nhận và chuyển về Cần duyệt khi phát hiện lỗi. Giữ nguyên văn bản cũ, tiến độ và khóa Mục 03. Các câu còn đúng được giữ.
+- Giữ toàn bộ sửa nhóm we/us/our và giảm lượt gọi của 2.6.0.6. Sửa thông báo chạy để phản ánh việc câu thiếu khóa cần người dùng xác nhận.
+
+Cách cập nhật:
+1. Dừng lượt dịch và đóng app cũ.
+2. Sao lưu thư mục game/.renpyvn, giải nén app mới vào thư mục mới.
+3. Chạy RUN_TRANSLATOR.bat, mở lại đúng thư mục game cũ; không xóa .renpyvn hoặc tạo lại tiến độ.
+4. Câu sai khóa được chuyển thành Bị chặn xưng hô/chờ thử lại. Dùng cùng gói ở nút Gemini: dịch + kiểm tra riêng • rule KHÓA để xử lý các câu còn lỗi. Có thể sửa riêng câu 178 thành "...Con chào dì!", nhưng vẫn cần hoàn thành bước kiểm tra lại trước khi duyệt.
+
+Kiểm chứng:
+9 ca mới kiểm tra lỗi ảnh, hai vai và đảo vai, đại từ lược tự nhiên, chiều ngược, người thứ ba/lời trích dẫn, khóa theo cảnh, AUDIT tất cả true, sửa riêng câu lỗi, chặn duyệt cá nhân/hàng loạt và gỡ chứng nhận cũ khi mở lại. Kiểm thử local/mô phỏng, chưa chạy Gemini thật/Windows thật. Không cam kết mọi lỗi ngữ nghĩa/xưng hô đều được giải quyết; đây là bản vá cho lỗi lọt khóa đã tái hiện.
