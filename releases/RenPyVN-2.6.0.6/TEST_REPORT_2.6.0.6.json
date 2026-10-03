@@ -1,0 +1,243 @@
+{
+  "scripts_run": 46,
+  "passed": 46,
+  "unrun_gui": [
+    "test_external_prompt_ui.py",
+    "test_pair_live_filter_2576.py"
+  ],
+  "new_unittest_cases": 14,
+  "live_gemini_tested": false,
+  "windows_tested": false,
+  "results": [
+    {
+      "test": "tests/test_character_names_2597.py",
+      "exit": 0,
+      "output": "PASS source names preserved with locked address, explicit glossary, ambiguous English words, retry-only repair, old draft migration\n"
+    },
+    {
+      "test": "tests/test_compact_batch_2569.py",
+      "exit": 0,
+      "output": "PASS CompactBatch 2.5.6.9: 30-target batches + compact later envelopes + 27/30 salvage -> retry only 3\n"
+    },
+    {
+      "test": "tests/test_composer_recovery_2605.py",
+      "exit": 0,
+      "output": "PASS >100k-character prompt, asynchronous editor, DOM/rendered variants, chunk recovery, prefix blocked, input failure never browser-restarts, cancellation and one-submit invariant\n"
+    },
+    {
+      "test": "tests/test_context_fallback_lockdefaults_2599.py",
+      "exit": 0,
+      "output": "PASS absent/unlocked pairs translate from context, old waits released, rules untouched, new lock reruns, editor/import default locks and conflict preservation\n"
+    },
+    {
+      "test": "tests/test_context_listener_neutral_2582.py",
+      "exit": 0,
+      "output": "PASS 2.5.8.2 context listener resolver + expanded retry + locally guarded neutral translation + bulk approval\n"
+    },
+    {
+      "test": "tests/test_continuous_workers_2585.py",
+      "exit": 0,
+      "output": "PASS continuous queue, no overlapping browser jobs, throttle, configurable 50-target calls and locked thought review drafts\n"
+    },
+    {
+      "test": "tests/test_deepseek_web_auto.py",
+      "exit": 0,
+      "output": "PASS DeepSeek Web pipeline: sequential retry, import, raw response, checkpoint URL, resume-skip\n"
+    },
+    {
+      "test": "tests/test_explicit_locked_roles_2598.py",
+      "exit": 0,
+      "output": "PASS screenshot 435/441, added vocatives without English you, me objects, third-person and quoted exceptions, isolated retry and old-draft audit\n"
+    },
+    {
+      "test": "tests/test_external_draft_import.py",
+      "exit": 0,
+      "output": "PASS: analysis+translation export covers dialogue/narration/menu and narration-only parts; full GUI import method writes drafts and selects tab04; file unchanged; reload persists; approved preserved; missing/duplicate/unknown/stale/tags rejected\n"
+    },
+    {
+      "test": "tests/test_external_token_guard.py",
+      "exit": 0,
+      "output": "PASS TokenGuard: locked RenPy spans + one-target retry + restore + source .rpy unchanged\n"
+    },
+    {
+      "test": "tests/test_fair_pronoun_windows_2592.py",
+      "exit": 0,
+      "output": "PASS 2.5.9.2 screenshot locks, natural omissions, third-person names, self lock, sentinel repairs, window grid, fair retry, JSON slice, old draft audit\n"
+    },
+    {
+      "test": "tests/test_fast_manual_rules_2579.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.9 fast manual pronoun save + selective dirty rerun\n"
+    },
+    {
+      "test": "tests/test_fresh_chat_per_part_2574.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.4 fresh-chat: exactly one clean Gemini chat is opened at start of each PART\n"
+    },
+    {
+      "test": "tests/test_gemini_format_guard.py",
+      "exit": 0,
+      "output": "PASS FormatGuard: subbatch 1 kept, drifting subbatch 2 reset to clean Gemini chat and retried alone\n"
+    },
+    {
+      "test": "tests/test_gemini_response_recovery.py",
+      "exit": 0,
+      "output": "PASS Gemini response recovery: compact truncated JSON salvage + automatic 205→90/90/25 TARGET subbatching\nPASS mini-batch merge preserves the original PART ledger\n"
+    },
+    {
+      "test": "tests/test_gemini_web_auto.py",
+      "exit": 0,
+      "output": "PASS Gemini Web: send/extract state machine + DeepSeek→Gemini checkpoint switch with continuity\n"
+    },
+    {
+      "test": "tests/test_hard_lock_audit_2604.py",
+      "exit": 0,
+      "output": "PASS screenshot pronouns, willing all-true auditor, target-only repair, certificate/approval guards, selective reopen revocation, third-person and plural exceptions\n"
+    },
+    {
+      "test": "tests/test_independent_pipeline_260.py",
+      "exit": 0,
+      "output": "PASS separate chats, isolated repair, unresolved identity and malformed reviewer fail closed, candidate persistence, approval/edit/rule guards, restart identity cache\nPASS stop/reopen during audit retains blocked draft and resumes audit only\nPASS technical tag guard blocks before semantic review\nPASS mixed cached/new targets have exact per-phase output contracts\n"
+    },
+    {
+      "test": "tests/test_isolated_workers_2574.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.4 IsolatedWorkers: G1/G2/G3 use distinct profiles/process mode + fresh chat per PART\n"
+    },
+    {
+      "test": "tests/test_lightwatcher_2573.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.3 LightWatcher: observer cache + no full document.body.innerText scan\n"
+    },
+    {
+      "test": "tests/test_listener_contract_2603.py",
+      "exit": 0,
+      "output": "PASS actual malformed shapes blocked, valid siblings retained, named listener schema, known IDs and duplicate guards; truncated composer never submits\n"
+    },
+    {
+      "test": "tests/test_listener_locked_2576.py",
+      "exit": 0,
+      "output": "PASS listener-aware locked translation: context escalation + nonblocking holds + targeted rerun\n"
+    },
+    {
+      "test": "tests/test_listener_self_guard_2581.py",
+      "exit": 0,
+      "output": "PASS 2.5.8.1 listener self-guard: A->A retries alone; exhaustion downgrades to unknown, never missing pronoun\n"
+    },
+    {
+      "test": "tests/test_locked_live_2584.py",
+      "exit": 0,
+      "output": "PASS 2.5.8.4: locked pair/inner-thought retries, live drafts before retries, durable partial result on failure, 50-TARGET splitting\nPASS phase 2 hard locks + live drafts; parenthetical thoughts retain their own speaker policy\n"
+    },
+    {
+      "test": "tests/test_locked_thought_defaults_2588.py",
+      "exit": 0,
+      "output": "PASS MC tôi/other mình locked, compact prompts, explicit overrides, narration/spoken exclusion, old invalid thought retained for retry and unrelated approved dialogue preserved\n"
+    },
+    {
+      "test": "tests/test_multi_gemini_2571.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.2 TrueParallel: G1=P001, G2=P002, G3=P003 concurrently; serial deterministic merge\n"
+    },
+    {
+      "test": "tests/test_multi_gemini_throttle_2571.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.2 adaptive throttle: G2 rate-limit -> local retry + future waves 3->2, no PART loss\n"
+    },
+    {
+      "test": "tests/test_noun_role_falsepositives_25910.py",
+      "exit": 0,
+      "output": "PASS four real-response role regressions, actual wrong pronouns blocked, resumed held rows reach review without retry, tags/placeholders preserved\n"
+    },
+    {
+      "test": "tests/test_onepass_old_checkpoint_2570.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.0 migration: old completed 2.5.6.9 checkpoint skips PARTs and runs only pair finalization\n"
+    },
+    {
+      "test": "tests/test_onepass_pronoun_translation_2570.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.0 OnePass: listeners + drafts -> final pronoun pairs -> targeted retranslation only\n"
+    },
+    {
+      "test": "tests/test_phase1_guard_2575.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.5 Phase1Guard: accidental task/translations ignored during pronoun analysis\n"
+    },
+    {
+      "test": "tests/test_phase_stream_completion_2602.py",
+      "exit": 0,
+      "output": "PASS paused stream waits for completion; stalled stream fails and retains diagnostic text\n"
+    },
+    {
+      "test": "tests/test_plural_pronouns_2595.py",
+      "exit": 0,
+      "output": "PASS plural prompts, relation context, inclusive/exclusive/family groups, possessives, singular locks, self locks, pack and incremental save\n"
+    },
+    {
+      "test": "tests/test_pronoun_first_2573.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.3 PronounFirst: analyze -> human lock gate -> translation hard-rules\n"
+    },
+    {
+      "test": "tests/test_pronoun_first_parallel_2573.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.3 two-stage translation remains true-parallel across PARTs\n"
+    },
+    {
+      "test": "tests/test_reference_recheck_2596.py",
+      "exit": 0,
+      "output": "PASS source recheck prompts, male/female mismatch, ambiguous exceptions, retry-only repair, old-draft audit, approved preservation\n"
+    },
+    {
+      "test": "tests/test_role_pronouns_2593.py",
+      "exit": 0,
+      "output": "PASS 2.5.9.3 role restoration, aunt objects, reordered mother-child, reflexive, third-party references, migration, progress\nPASS marker protocol end-to-end\n"
+    },
+    {
+      "test": "tests/test_runtime_name_cache_2587.py",
+      "exit": 0,
+      "output": "PASS bundled interpreter routing, no launch loop, 12-worker single compilation, name edits and ambiguous aliases\n"
+    },
+    {
+      "test": "tests/test_single_json_pronouns_2577.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.8 single whole-script pronoun pack + FAST rules-only import\nPASS 2.5.7.7 import_rules detects compact pronoun JSON before PART pipeline\n"
+    },
+    {
+      "test": "tests/test_stall_recovery_2574.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.4 watchdog: frozen worker restarts once and retries only unfinished mini-batch\n"
+    },
+    {
+      "test": "tests/test_strict_group_contract_2606.py",
+      "exit": 0,
+      "output": "..............\n----------------------------------------------------------------------\nRan 14 tests in 0.110s\n\nOK\n"
+    },
+    {
+      "test": "tests/test_target_retry_queue_2580.py",
+      "exit": 0,
+      "output": "PASS 2.5.8.0 target retry queue: good targets commit; bad target retries alone; exhaustion never blocks pipeline\n"
+    },
+    {
+      "test": "tests/test_true_parallel_2572.py",
+      "exit": 0,
+      "output": "PASS 2.5.7.2 TrueParallel: G1=P001, G2=P002, G3=P003 concurrently; serial deterministic merge\n"
+    },
+    {
+      "test": "tests/test_unlimited_gemini_workers_2581.py",
+      "exit": 0,
+      "output": "PASS 2.5.8.1 Gemini workers: no hard 4-worker clamp; 10 isolated workers are instantiated with distinct profiles\n"
+    },
+    {
+      "test": "tests/test_web_ack_fix.py",
+      "exit": 0,
+      "output": "PASS WebAckFix: delayed Gemini ACK/response is accepted with exactly one submit and zero duplicate Enter\n"
+    },
+    {
+      "test": "tests/test_worker_fault_isolation_2583.py",
+      "exit": 0,
+      "output": "PASS 2.5.8.3 worker fault isolation: WinError 10054 requeues only failed PART and keeps job alive\n"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+RenPyVN 2.6.0.6 — StrictGroupContext
+
+Mục tiêu: giữ đúng khóa Mục 03, làm rõ we/us/our theo cảnh và giảm lượt Gemini thừa. Không có cam kết hay phép đo "đúng 100%": nhóm/người nghe vẫn được AI suy luận, cần đối chiếu game thật.
+
+Thay đổi:
+- Dịch và QA dùng chung cách chọn khóa: quy tắc đã khóa ưu tiên gợi ý chưa khóa; khóa đúng cảnh ưu tiên khóa toàn game; tên alias được quy về ID. Các khóa mâu thuẫn cùng mức ưu tiên bị chặn, không tự sửa khóa người dùng.
+- Luồng kiểm tra độc lập chờ Mục 03 khi cặp/phạm vi chưa có khóa; không dịch theo đại từ tự đoán rồi chứng nhận đạt. Không gọi sửa AI lặp lại cho vấn đề cần người dùng xác nhận khóa.
+- Mỗi we/us/our/ours/ourselves phải có bản ghi riêng: ID thành viên, có bao gồm người nghe cá nhân không, căn cứ file.rpy:dòng và voice khi trích lời người khác. Dòng căn cứ phải có trong ngữ cảnh cùng cảnh/nhánh của pipeline. Đây là kiểm tra địa chỉ căn cứ, không chứng minh diễn giải AI đúng.
+- Không suy we từ duy nhất cặp đang khóa. Nhóm chưa rõ hoặc nhóm thiếu người phát ngôn bị giữ; không tự chốt để hoàn tất. Lời dẫn không xác định được người phát ngôn của we cũng cần duyệt.
+- Bản dịch ghi cách gọi cho từng nhóm và được đối chiếu với câu thực tế. Chặn trường hợp rõ như nhóm không có người nghe nhưng dùng "chúng ta", nhóm có người nghe nhưng dùng "chúng tôi". Các cách gọi phụ thuộc ngữ cảnh như "mình", "hai mẹ con" vẫn cần AI kiểm tra và người dùng soát.
+- Giữ khả năng lược chủ ngữ tự nhiên: phải khai báo lược, có lý do, được kiểm tra độc lập; không buộc dịch cứng từng đại từ. Prompt yêu cầu tiếng Việt tự nhiên, giữ cá tính/cảm xúc/hàm ý, không word by word hoặc thêm tình tiết.
+- Nhóm và cách gọi được lưu cùng bản dịch; thay bản dịch/metadata/khóa làm chứng nhận cũ không còn hợp lệ. Khi mở lại, bản nháp pipeline cũ thiếu kiểm tra nhóm giữ nguyên văn bản nhưng chuyển Cần duyệt; không xóa tiến độ hoặc sửa khóa.
+- Gemini nhận hướng dẫn cùng yêu cầu đầu tiên của từng chat: bỏ lượt chỉ gửi AI_GUIDE rồi chờ READY. Vẫn giữ ba giai đoạn LISTENER → TRANSLATE → AUDIT, audit vẫn chat riêng.
+- Lỗi đọc/định dạng AUDIT chỉ gọi lại AUDIT, giữ bản dịch đã nhận. Không bỏ kiểm tra hoặc đánh dấu đạt giả.
+- Trong "Dịch + bắt người nghe" có kiểm tra độc lập, max_attempts=0 dùng ngân sách tự động 3 lượt/câu/phiên thay vì quay vòng vô hạn. Giá trị dương được giữ. Câu chưa đạt ở lại Cần duyệt để sửa/chạy lại sau. Các luồng cũ khác vẫn giữ cách hiểu 0 của chúng. Không sửa settings.json người dùng.
+
+Cách dùng:
+1. Sao lưu thư mục game và .renpyvn; giải nén bản mới vào thư mục app mới.
+2. Chạy RUN_TRANSLATOR.bat, mở lại đúng thư mục game cũ; không xóa .renpyvn.
+3. Kiểm tra Mục 03 đã khóa đúng cặp và phạm vi cảnh. Dùng luồng Gemini "Dịch + bắt người nghe".
+4. Soát thông tin nhóm trong note và các câu Cần duyệt. Nhóm chưa rõ không được tự duyệt hàng loạt.
+
+Phạm vi kiểm chứng:
+Kiểm thử local và mô phỏng pipeline/DOM, không phải Gemini Web thật hoặc Windows thật. Chưa nhận được câu sai/log của game người dùng, chưa đo độ chính xác hay thời gian thực tế. Các trường hợp người thứ ba/đại từ số nhiều khác vẫn dùng QA và kiểm tra độc lập sẵn có, chưa có hợp đồng thành viên nhóm bắt buộc như we/us/our.
