@@ -1,0 +1,81 @@
+RenPyVN 2.6.0.8 — SemanticRoleGuard
+
+Lỗi người dùng báo: Emma (em) → Vincent (p), khóa dì/con.
+Nguồn trong ảnh bắt đầu: Looks like you're getting along with my dau...
+Đã dùng câu đầy đủ giả lập Looks like you're getting along with my daughters!
+để tái hiện, không khẳng định đây là nguyên văn đầy đủ của file game.
+Bản dịch sai trong ảnh: Xem ra dì với mấy đứa con gái của con hợp nhau phết đấy!
+Ví dụ đúng: Có vẻ con khá hợp với mấy đứa con gái của dì đấy!
+
+Nguyên nhân và sửa:
+- Kiểm tra từ khóa chưa kiểm tra đủ vai ngữ nghĩa. Cùng có dì/con vẫn có thể
+  đảo người nói, người nghe và người sở hữu.
+- Thêm semantic_roles.py: lấy vai I/me/my/mine/myself và you/your/yours từ
+  nguồn, cung cấp SOURCE_ROLE_FACTS cho bước dịch và kiểm tra độc lập.
+- Chặn sở hữu đảo vai bằng các neo người/vật trong nguồn và bản dịch:
+  my/your daughter, son, children, mother/father, wife/husband, family,
+  house, room, car, phone, name, eyes/hands, hair, voice, heart, life...
+  Cụm sở hữu của dì/nhà dì/mẹ dì không phụ thuộc thứ tự cả câu.
+- Chặn chủ ngữ I/you bị đảo ở các mệnh đề có hành động rõ tương ứng;
+  tránh coi mọi từ ở đầu câu là chủ ngữ khi tiếng Việt đổi thứ tự tự nhiên.
+- Với thoại single đã khóa, mỗi my/your ngoài lời trích dẫn phải có
+  owner_renderings riêng: index nguồn, vai SELF/ADDR cố định, cụm nguyên văn
+  thực sự có trong bản dịch, chủ sở hữu đúng khóa. Thiếu/trùng/sai index,
+  cụm không có trong câu, sai chủ sở hữu: giữ chờ, không chứng nhận.
+  Lược sở hữu tự nhiên cần chỉ ra cụm người/vật và lý do; reviewer vẫn phải
+  kiểm tra không mất nghĩa. Không thêm lượt Gemini riêng cho metadata này.
+- Cả bước nhập, chứng nhận và duyệt đều kiểm tra vai; reviewer nói true
+  không miễn kiểm tra cục bộ. Chứng nhận gắn với cả metadata sở hữu thực tế.
+- Tách lời trích dẫn khỏi khóa giọng bên ngoài trong các bộ kiểm tra cục bộ;
+  phần trích vẫn do reviewer kiểm tra theo giọng/người được trích.
+- Khi mở dự án cũ: giữ chữ dịch và khóa, thu hồi chứng nhận của câu sai vai
+  được phát hiện hoặc câu my/your chưa có đối chiếu sở hữu mới. Câu không bị
+  ảnh hưởng giữ trạng thái. Những câu giữ chờ cần chạy lại để dịch/kiểm tra.
+
+Tốc độ:
+- Bốn worker vốn chạy song song, mỗi worker vẫn cần chốt người nghe → dịch
+  → kiểm tra độc lập. Bốn cửa sổ không đồng nghĩa tốc độ gấp bốn.
+- Bước người nghe trả JSON ngắn: gom tối đa 100 TARGET/lượt, vẫn đọc đủ
+  nguồn/ngữ cảnh. Có we/us/our cần bằng chứng nhóm dài: giữ lô nhỏ cấu hình.
+  Lô dịch và AUDIT vẫn theo số câu/lần gọi đã chọn.
+- Fixture 100 câu, lô dịch 30, không nhóm, không retry: 12 lượt cũ → 9 lượt
+  mới (1 listener, 4 translate, 4 audit). Đây là giảm lượt gọi 25%, KHÔNG
+  phải đo tốc độ thực tế hay cam kết nhanh hơn 25% trên Gemini Web.
+- Căn cứ listener sao chép lặp mà bước nhập sẽ cách ly được kiểm tra sớm,
+  tránh dịch/AUDIT tốn lượt rồi vẫn bị cách ly khi nhập vào project.
+- Log tổng thời gian LISTENER/TRANSLATE/AUDIT và số lượt câu gồm retry;
+  responses/*.metrics.json ghi số giây, số TARGET, độ dài prompt từng lượt.
+  Dữ liệu ở .renpyvn/external_auto/<pack>/listener_locked_translation/responses.
+- UI hiển thị lượt/giới hạn thực của pipeline thay vì 0/∞ sau khi đã chạy.
+- Không bỏ bước kiểm tra độc lập, không giảm ngữ cảnh, không đổi sang API.
+
+Kiểm chứng:
+- 48/48 script kiểm thử không cần màn hình đạt.
+- 15 ca mới kiểm tra sở hữu, đảo chủ ngữ, xưng hô hai từ đúng nhưng sai vai,
+  nhiều sở hữu trong một câu, metadata sai/thiếu, lược tự nhiên, người thứ ba,
+  quote, đổi trật tự mệnh đề, chứng nhận/duyệt/mở lại, chỉ sửa câu lỗi,
+  giữ metadata khi retry AUDIT, số lượt 100 câu và 4 worker thực sự cùng chạy.
+- Giữ 9 ca lời chào và 14 ca nhóm của bản trước. Mock kiểm thử pipeline cũ
+  được cập nhật trả owner_renderings cho my yoga partner, giữ các assertion cũ.
+- Hai test GUI chưa chạy vì môi trường không có màn hình. Chưa chạy Windows
+  hoặc tài khoản Gemini Web thực; xem TEST_REPORT_2.6.0.8.json.
+
+Giới hạn thực tế:
+- Chưa đo tỷ lệ chính xác trên toàn game hay tốc độ máy người dùng.
+- Vai ngữ pháp cố định không chứng minh toàn bộ nghĩa của tiếng Anh tự do.
+  Neo từ vựng không bao phủ mọi diễn đạt; nhiều người sở hữu cùng một danh từ,
+  mỉa mai, tỉnh lược, lời trích và người thứ ba vẫn cần hiểu cảnh/reviewer.
+  Metadata cũng là đề xuất của AI, có thể sai; không coi nó là bằng chứng
+  tuyệt đối. Không cam kết đầu ra 100% chỉ vì đã thêm prompt/kiểm thử.
+- Gemini Web có thời gian suy nghĩ/sinh chữ, điều kiện tài khoản và giới hạn
+  riêng. Bốn cửa sổ cùng tài khoản không tạo bốn hạn mức độc lập. Chưa có log
+  máy người dùng nên chưa xác định nút thắt thực tế là bước nào/model nào.
+
+Cập nhật:
+1. Dừng tác vụ, đóng app cũ.
+2. Giải nén thư mục bản 2.6.0.8; chạy RUN_TRANSLATOR.bat.
+3. Mở đúng game cũ và giữ nguyên .renpyvn, không tạo dự án mới/xóa tiến trình.
+4. Chạy Gemini: dịch + kiểm tra riêng • rule KHÓA với gói cũ.
+5. Không ghi các câu còn bị chặn vào game. Xem Chi tiết câu / lỗi để đọc lý do.
+6. Nếu vẫn chậm, xem log thời gian từng bước; cần model web đang chọn và log
+   này để phân biệt Gemini phản hồi chậm với retry/browser/app bị đứng.
