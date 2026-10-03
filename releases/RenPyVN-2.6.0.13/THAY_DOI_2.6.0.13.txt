@@ -1,0 +1,69 @@
+RenPyVN 2.6.0.13 — ThirdPersonContext
+
+Sửa đối chiếu người được nhắc tới, không chỉ người đang nghe.
+
+Lỗi được tái hiện:
+Kayla → Vincent: I literally saw you staring right at her.
+Hồ sơ: Kayla là em gái Chloe; Chloe là chị gái Kayla.
+her trong cảnh chỉ Chloe, nên lời Kayla gọi Chloe là chị ấy, không phải cậu ấy.
+Ví dụ: Tớ thấy rõ ràng cậu đang nhìn chằm chằm chị ấy còn gì.
+Không thay toàn bộ her thành chị ấy: người được nhắc tới và góc nhìn phải
+được xác định riêng theo mỗi câu. Vincent nhắc Chloe không tự thành anh/em.
+
+Thay đổi:
+1. Mọi pha có he/she/him/her/his/hers/himself/herself nhận REFERENCE_PROFILES:
+   role, giới tính và quan hệ có chiều của người nói/các người có thể được
+   nhắc tới. Bản trước chỉ gửi quan hệ chi tiết cho we/us/our. Dữ liệu nhận
+   dạng/tên không được dùng để tự đoán tuổi hoặc quan hệ.
+2. Ngay trong lượt phân tích người nghe hiện có, yêu cầu third_references
+   theo từng lượt đại từ nguồn: index, source, referent (ID), voice, evidence
+   có file.rpy:dòng và tình tiết. Listener và referent là hai vai độc lập.
+   Người nghe rõ nhưng referent chưa rõ: giữ người nghe, giữ câu chờ kiểm tra,
+   không giả định referent chính là listener hay tự sửa khóa Mục 03.
+3. Cách gọi anh/chị/em được suy từ quan hệ anh/chị/em có chiều đã ghi rõ,
+   theo người phát ngôn. relationship_map mô tả CHỦ hồ sơ: ka→ch em gái nghĩa
+   ka là em của ch. Đối chiếu role và quan hệ hai chiều; dữ kiện mâu thuẫn
+   thì chặn để sửa hồ sơ. Quan hệ chung chung 'chị em' không đủ chốt chiều.
+4. Translation nhận THIRD_REFERENCES_FIXED và trả third_renderings trỏ tới
+   cách gọi NGUYÊN VĂN trong bản dịch. Khóa chị: chị ấy/chị Chloe (hoặc tên
+   Chloe) được phép; cậu ấy/cô ấy/em ấy không được chứng nhận. Lược tự nhiên
+   cần lý do và reviewer xác nhận không mất ý; không khai lược để che đại từ
+   vẫn còn trong câu. Nhân vật được trích dẫn có voice riêng để chọn góc nhìn.
+5. AUDIT độc lập so sánh nhận dạng, quan hệ, cách gọi với cả cảnh. Một verdict
+   true không được vượt kiểm tra cứng về cách gọi trong bản dịch thực tế.
+   Chứng nhận ràng buộc cả third_references/third_renderings với nguồn, bản
+   dịch và rules; sửa metadata/hồ sơ/bản dịch làm mất hiệu lực chứng nhận.
+6. Khi mở tiến độ cũ, câu đã đi qua pipeline nhưng chưa có đối chiếu người
+   thứ ba được chuyển về cần kiểm tra, kể cả trước đó đã duyệt. Giữ nguyên
+   bản dịch, nguồn và khóa để đối chiếu. Câu không liên quan giữ tiến độ.
+   Chạy dịch tiếp để xử lý câu cần kiểm tra; không xóa .renpyvn.
+7. Giữ gom AUDIT, cập nhật bảng từng dòng và ngân sách input 30.000 UTF-16
+   từ 2.6.0.12. Không thêm pha gọi Gemini thứ tư. Metadata mới có thể làm
+   nhóm nhỏ hơn khi chạm ngân sách input; không hứa giữ nguyên số request.
+   Dừng/AUDIT lỗi kỹ thuật vẫn giữ draft và metadata, tiếp tục AUDIT-only.
+
+Kiểm chứng:
+- 53/53 script hồi quy không cần màn hình đạt, gồm 15 ca mới: sai cách gọi,
+  chiều anh/chị/em, giới tính, quote voice, thiếu/sai/trùng tham chiếu,
+  evidence cảnh, lược tự nhiên, chữ ký, sửa hồ sơ, chỉ thử lại câu sai,
+  giữ người nghe khi referent chưa rõ, Dừng/tiếp tục AUDIT-only, audit lỗi
+  không dịch lại, mở tiến độ cũ và chia prompt giữ đủ 50 bộ metadata.
+- 4 script GUI thật đạt: 3 hồi quy cũ và 1 ca mới với bảng 1.183 câu. Đổi
+  metadata sang cậu ấy dù verdict/signature true vẫn mất badge đã kiểm tra
+  và bị chặn duyệt. Tk chạy trên Linux/X.Org dummy, không giả widget.
+- Đọc riêng hồ sơ từ ZIP chẩn đoán đã gửi: ka→ch suy ra chị; ch→ka suy ra em.
+  ZIP/log/luật/script riêng của game người dùng không được đưa lên GitHub.
+- Runtime/vendor trong bản đầy đủ giữ byte như 2.6.0.12. Không sửa RenPy nguồn.
+- Chưa kiểm thử Windows hoặc Gemini Web đăng nhập thực tế; ca model sử dụng
+  phản hồi giả lập để kiểm tra đường đi và chặn lỗi, không đo độ đúng của AI.
+- Phạm vi kiểm tra cứng quan hệ có chiều ở bản này là anh/chị/em đã ghi rõ.
+  Các quan hệ khác và nhận dạng her thực sự chỉ ai vẫn cần reviewer đối
+  chiếu toàn cảnh. Không tuyên bố dịch/xưng hô đạt tuyệt đối 100%.
+
+Cập nhật:
+1. Dừng & lưu, đóng bản đang chạy.
+2. Giải nén RenPyVN_2.6.0.13_ThirdPersonContext_COMPLETE.zip vào thư mục mới.
+3. Chạy RUN_TRANSLATOR.bat, kiểm tra tiêu đề 2.6.0.13-ThirdPersonContext.
+4. Mở lại thư mục game cũ; giữ .renpyvn. Bấm Bắt đầu / dịch tiếp để kiểm tra
+   lại câu chưa có đối chiếu người thứ ba. Không chỉ Duyệt tất cả bản cũ.
+5. Kiểm tra lại câu 1352: nếu cảnh xác nhận her=Chloe, Kayla gọi chị ấy.
