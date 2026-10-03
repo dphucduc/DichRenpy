@@ -1,0 +1,75 @@
+RenPyVN 2.6.0.11 — AdaptiveWebBatch
+
+Log thực tế bản 2.6.0.10 cho thấy lỗi luồng multipart/READY:
+- Đoạn 4 worker 18:13:03–18:22:12 dài 549 giây.
+- 146 yêu cầu bắt đầu, 42 phản hồi thành công, 100 yêu cầu lỗi,
+  4 yêu cầu chưa có kết quả ở cuối log.
+- 85 yêu cầu lỗi xác nhận đoạn ngữ cảnh; 89 dòng báo multipart,
+  không có dòng xác nhận READY thành công trong đoạn này.
+- 35 lượt câu được log ghi nhận qua AUDIT, không đồng nghĩa đã duyệt thủ công.
+- Median phản hồi thành công: LISTENER 13,8s, TRANSLATE 13,7s, AUDIT 11,85s.
+- Đây không phải phép đo thông lượng của luồng bình thường: phần lớn yêu cầu
+  thất bại hoặc thử lại. Không nên tăng worker để che lỗi giao thức gửi.
+
+Sửa:
+1. Bỏ multipart và phụ thuộc phản hồi RV_READY. Mỗi yêu cầu Gemini nhận là
+   một task đầy đủ và trả kết quả trực tiếp. Prompt còn quá dài thì không
+   gửi các mảnh dở dang hoặc cắt đuôi nội dung.
+2. Trước khi gửi, tính toàn bộ guide/envelope/task bằng UTF-16. Tự chọn số
+   TARGET lớn nhất vừa ngân sách 30.000, thay vì cố gửi 30/100 câu bất kể
+   độ dài. Cũng tính guide cho yêu cầu về sau để luôn đủ chỗ mở chat mới.
+3. Mỗi task con giữ toàn bộ source/context, STAGE/control-flow và bảng khóa
+   của task gốc. Chỉ các TARGET active cần kết quả; TARGET khác chuyển thành
+   CONTEXT_ONLY. Metadata listener/nhóm/chủ sở hữu/quyết định/bản nháp/lý do
+   sửa được giới hạn đúng TARGET active, giữ đủ từng trường/từng index.
+4. Lượt thoại bổ sung lặp trong nhiều listener hint được lưu một lần trong
+   EXTRA_CONTEXT_TURNS; mỗi hint giữ các ID tham chiếu theo thứ tự. Có thể
+   khôi phục chính xác từng hint, gồm source/file/line/speaker/listener.
+   Không bỏ ngữ cảnh để tăng tốc.
+5. Bỏ các record REJECTED rỗng ở lượt dịch đầu; giữ đầy đủ record có lỗi,
+   bản dịch trước hoặc yêu cầu đổi cách diễn đạt ở lần sửa thứ ba.
+6. Một task con lỗi không làm mất phản hồi các task con thành công. Chỉ
+   TARGET thiếu/sai được sửa lại. Trùng TARGET vẫn bị bác; dữ liệu trả cho
+   TARGET ngoài task con không được dùng để ghi đè kết quả task khác.
+7. AUDIT lỗi ở một task con: giữ bản nháp/owner trace/group trace và chỉ
+   AUDIT lại phần lỗi, không dịch lại các câu đã có bản nháp hợp lệ.
+   AUDIT vẫn mở chat mới cho từng yêu cầu kiểm tra độc lập.
+8. Lỗi gửi/JSON được giữ đúng lý do; không tự đổi thành AI thiếu bản dịch
+   hoặc reviewer bác nội dung. Khóa Mục 03 và kiểm tra vai/nhóm/my/your giữ
+   nguyên. Metadata do AI khai vẫn cần đối chiếu, không được tự chứng nhận.
+9. Nếu ngay cả một TARGET với toàn cảnh/khóa vẫn vượt 30.000: dừng trước khi
+   gửi và chỉ rõ cần gói PART nhỏ hơn. Không cắt ngữ cảnh, không lặp READY.
+
+Kiểm chứng:
+- 51/51 script không cần GUI đạt.
+- 7 ca adaptive mới kiểm tra giữ đủ scene/control-flow/rules, metadata đúng
+  TARGET, phục hồi chính xác hint đã dedup, chặn ngữ cảnh quá lớn, pipeline
+  đầy đủ, lỗi translate con giữ siblings, lỗi audit chỉ audit lại, duplicate
+  vẫn bị bác. Các ca pipeline bao gồm khóa dì/con và my daughters.
+- 9 ca Chromium/CDP cũ đạt; 4 ca có editor cap 32.000 đạt.
+- Trên request người dùng đã gửi: 30 TARGET thành hai yêu cầu đầy đủ với
+  27 và 3 TARGET, lần lượt 29.822 và 14.790 UTF-16 (gồm guide/envelope).
+  Mỗi yêu cầu giữ mọi dòng cảnh gốc, không cần READY; không bỏ câu dịch nào.
+- Đây là replay local Chromium 151.0.7922.173 + Quill 1.3.7/2.0.3. Phản hồi
+  trong browser fixture và integration test là mô phỏng, không chứng minh
+  tốc độ hoặc chất lượng Gemini live. Chưa thử Windows/Gemini đăng nhập.
+- Hai script GUI chưa chạy vì môi trường không có màn hình.
+- Chỉ report tổng hợp và kiểm thử chung được phát hành; log/request/luật
+  game của người dùng không được đưa vào ZIP hoặc GitHub.
+
+Cập nhật:
+1. Bấm Dừng & lưu và đóng app 2.6.0.10.
+2. Giải nén ZIP 2.6.0.11 vào thư mục mới, chạy RUN_TRANSLATOR.bat.
+3. Kiểm tra tiêu đề 2.6.0.11-AdaptiveWebBatch. Mở lại game cũ.
+4. Giữ nguyên .renpyvn để giữ bản nháp, khóa, listener và câu đã qua AUDIT.
+5. Chạy Gemini: dịch + kiểm tra riêng • rule KHÓA. Có thể giữ 4 worker như
+   đoạn log vừa đo; không cần tăng worker để sửa lỗi gửi. Ngân sách input
+   tự điều chỉnh số TARGET, không cần bạn giảm thủ công số câu/lần gọi.
+6. Theo dõi log yêu cầu -> phản hồi -> AUDIT đạt. Chỉ tính câu qua AUDIT
+   khi đánh giá tốc độ; đã gửi yêu cầu hay đã nhận READY không phải tiến độ.
+
+Kiểm thử phát triển:
+LOCALAPPDATA=/tmp/renpyvn-test-settings PYTHONPATH=. python tests/test_adaptive_web_batch_2611.py
+LOCALAPPDATA=/tmp/renpyvn-test-settings PYTHONPATH=. python tests/browser_prompt_budget_2610.py
+RENPYVN_REPRO_REQUEST có thể trỏ tới request local để replay.
+Playwright/Chromium dùng cho test; app tiếp tục dùng CDP và runtime kèm ZIP.
