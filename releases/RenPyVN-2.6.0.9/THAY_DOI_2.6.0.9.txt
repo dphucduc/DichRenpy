@@ -1,0 +1,73 @@
+RenPyVN 2.6.0.9 — EditorIntegrity
+
+Sửa luồng nhập/đối chiếu prompt trên Gemini Web.
+Nguồn chẩn đoán: hai log người dùng gửi. Cả lượt 4 worker và lượt chỉ G1
+đều có lỗi ô nhập: 1/xxxxx ký tự, hoặc 32168/32461 ký tự. Lượt P001 thứ hai
+kết thúc 0/47 câu đạt. Log chưa xác định chắc tại sao editor chỉ còn 1 ký tự.
+
+Điều đã tái hiện thực tế:
+- Chromium 151.0.7922.173 chạy local, editor Quill thật 1.3.7 và 2.0.3.
+- Cách cũ xóa rồi gửi liên tiếp các đoạn 4000 ký tự không chờ/đặt lại con trỏ
+  làm khác nội dung tại điểm nối đoạn. Trong probe, sai đầu tiên ở offset 3875
+  dù độ dài tổng gần bằng nguồn. Đây là lỗi editor thực, không chỉ mock Python.
+- Các ca Chromium local không truy cập/đăng nhập Gemini, không chứng minh
+  tất cả lỗi 1 ký tự trên Windows có cùng nguyên nhân với lỗi nối đoạn này.
+
+Thay đổi:
+1. Chọn editor theo mức cụ thể của selector, tránh chọn ô search/khối lớn hơn
+   thay vì ql-editor. Khi editor bị thay thế, tìm lại node còn sống.
+2. Xóa/thay nội dung qua model Quill khi model công khai có thể truy cập.
+   Khi không truy cập được model, dùng selection chỉ trong đúng editor.
+   Không gán textContent trực tiếp để bỏ qua model Quill; không selectAll cả
+   document, không tự xây lại các paragraph của Quill bằng DOM thô.
+3. Trước mỗi đoạn native: đặt con trỏ ở cuối tài liệu hiện tại; sau đoạn đó
+   chờ và kiểm tra đủ prefix. Đoạn sai thì dừng, không ghép thêm hàng loạt.
+4. Đọc độc lập modelText và văn bản theo cấu trúc DOM. Khi có model, cả model
+   và DOM phải khớp. Khi model không truy cập được, dùng cấu trúc block/BR,
+   tránh innerText thêm dòng trống do layout hoặc textContent mất ngắt dòng.
+5. Giữ khoảng trắng bên trong câu khi đối chiếu; không còn xóa toàn bộ khoảng
+   trắng để chấp nhận prompt. NFC, CRLF, NBSP và dấu editor được chuẩn hóa;
+   mất dấu cách/ngắt dòng giữa các từ vẫn bị chặn. Kiểm tra toàn bộ, không chỉ
+   độ dài, đầu/cuối hoặc số TARGET. Chưa khớp thì chưa bấm Gửi.
+6. CDP giữ trạng thái focus của trang khi Chrome hỗ trợ, để background worker
+   vẫn có trang active. Không ép cửa sổ của người dùng nhảy lên trước liên tục.
+7. Khi ba cách nhập vẫn không khớp: dừng tác vụ, hủy công việc đang chờ,
+   giữ bản nháp/khóa/cache người nghe, đóng các browser do tác vụ quản lý.
+   Đây là lỗi web_input, không tiêu tiếp ba vòng dịch/ngữ nghĩa từng câu.
+8. Lỗi gửi bước kiểm tra không được ghi là reviewer bác nội dung. Bản nháp
+   đã lưu khi AUDIT lỗi được giữ và lần chạy tiếp có thể chỉ AUDIT lại.
+9. Đóng browser khi hoàn tất, lỗi hoặc người dùng Dừng; giữ profile đăng nhập.
+10. Thêm *.editor.json tại:
+    <game>/.renpyvn/external_auto/<pack>/listener_locked_translation/responses/
+    Ghi loại editor, trạng thái focus/selection, có model không, độ dài,
+    hash nội dung, điểm khác đầu tiên và cách nhập đã thử. Không ghi prompt
+    nguyên văn/cookie/token vào tệp chẩn đoán này. Log dẫn đường tới tệp.
+    Request/raw cũ của app vẫn nằm local theo cơ chế trước.
+
+Kiểm chứng bản sửa:
+- 49/49 script kiểm thử không cần màn hình đạt, gồm 6 ca mới về lỗi nhập:
+  dừng đúng phase, không đốt retry, giữ bản nháp/khóa/cache, AUDIT-only khi
+  chạy lại, hủy/đóng browser và một worker lỗi làm dừng các worker còn lại.
+- 9 ca Chromium/CDP thật đạt (có các subcase Quill 1/2 và textarea/editor):
+  native prompt 42.419 ký tự; sửa bằng model trên 100k; nhập chia đoạn trên hai
+  Quill; Quill không lộ model; editor bị thay thế; search lớn hơn; bốn CDP
+  target nền đồng thời; editor hỏng không gửi; textarea/contenteditable nhiều
+  dòng, khoảng trắng, Unicode/tag/biến.
+- Test giữ bất biến mỗi lời gửi chỉ submit một lần.
+- Có bản phân phối Quill offline đã xác minh npm integrity, manifest và giấy
+  phép trong tests/browser_assets. Playwright chỉ là phụ thuộc kiểm thử dev;
+  app vẫn dùng CDP/Python như trước, không cần cài Playwright để chạy app.
+- Hai test GUI chưa chạy vì không có màn hình. Chưa kiểm chứng Gemini live
+  hoặc Windows thật. Không cam kết phần mềm hết mọi bug hay dịch đúng 100%.
+
+Cập nhật:
+1. Dừng dịch, đóng app cũ.
+2. Giải nén bản 2.6.0.9 rồi chạy RUN_TRANSLATOR.bat.
+3. Mở đúng game cũ, giữ nguyên .renpyvn. Không xóa tiến độ/khóa.
+4. Chạy lại Gemini: dịch + kiểm tra riêng • rule KHÓA. Thử 1 worker trước.
+5. Nếu vẫn lỗi ô nhập, app sẽ dừng và chỉ rõ tệp *.editor.json. Log và tệp
+   này giúp chẩn đoán trên Gemini thật mà không suy đoán từ 1/xxxxx ký tự.
+
+Chạy kiểm thử trình duyệt (cho phát triển, không cần để chạy app):
+LOCALAPPDATA=/tmp/renpyvn-test-settings PYTHONPATH=. python tests/browser_editor_2609.py
+Cần playwright và Chromium; có thể chỉ định RENPYVN_TEST_CHROMIUM.
