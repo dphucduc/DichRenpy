@@ -1,0 +1,74 @@
+RenPyVN 2.6.0.12 — WebSpeedUI
+
+Tăng tốc xử lý trên app và giảm số lượt Gemini Web, giữ kiểm tra chất lượng.
+
+Giao diện:
+1. Bảng 250 dòng cập nhật theo phần thay đổi. Không xóa rồi dựng lại toàn
+   trang khi vài bản nháp vừa về; giữ selection, vị trí cuộn và ô đang sửa.
+2. Cache hiển thị giới hạn trong trang đang xem. So sánh đủ mọi trường row
+   và snapshot rules: sửa target, nguồn, listener, owner/group metadata hoặc
+   khóa Mục 03 đều buộc kiểm tra lại. Cache không được dùng để duyệt/xuất.
+3. Nhãn trạng thái không chạy hai lần cùng kiểm tra vai/khóa cho một câu.
+   Các điều kiện schema, verdict thật và signature vẫn được kiểm tra đầy đủ.
+4. Nếu worker đang giữ mutex import/commit, Tk không đứng chờ đọc dự án.
+   Giữ yêu cầu refresh pending và cập nhật ở poll tiếp theo sau khi DB rảnh.
+   Không bỏ dữ liệu đã ghi, không thay đổi giao dịch lưu tiến độ.
+
+Luồng web:
+5. Sau khi chốt listener, hoàn tất các nhóm dịch của một vòng rồi gom các
+   bản nháp hợp lệ để AUDIT. Các nhóm dịch giữ giới hạn cũ. Bản nháp vẫn
+   được lưu ngay trước AUDIT; Dừng có thể tiếp tục bằng AUDIT-only.
+6. AUDIT tối đa 100 TARGET/yêu cầu và tiếp tục chia theo ngân sách input
+   30.000 UTF-16. Mỗi TARGET bắt buộc có verdict/căn cứ riêng; thiếu, sai vai,
+   sai owner/group/name/token hoặc chữ ký không hợp lệ vẫn bị chặn.
+7. AUDIT lỗi trả định dạng/JSON: thử lại audit ở nhóm nhỏ hơn ở vòng sau,
+   giữ bản nháp/trace, không tự bắt dịch lại những câu chưa nhận được audit.
+   Reviewer vẫn dùng chat mới độc lập cho từng yêu cầu.
+8. Chờ response: giữ đủ hai giây ổn định và không trả khi còn đang stream.
+   Khi đã có answer mới và không stream, dò gần deadline hơn để bớt thời
+   gian ngủ thừa; không rút ngắn guard, không gửi lặp để tìm response.
+
+Số đo và giới hạn:
+- Benchmark Tk thật, dữ liệu 1.183 câu, trang 250 câu có audit certificate.
+  Median cập nhật trang KHÔNG ĐỔI trước: 97,68 ms; sau: 14,64 ms.
+  Năm lần cập nhật trước tạo lại 1.250 item; sau không insert/delete/item.
+  Đây là số đo phần refresh local Linux, không phải tốc độ dịch hay Windows.
+- Mô phỏng 100 câu ngắn, không bị chia thêm vì input: 9 request -> 6 request
+  (1 listener + 4 translation + 1 audit), giảm 33% số request trong fixture.
+  Với PART 50 câu tương tự: 5 -> 4. Cảnh dài/trace nhiều vẫn có thể cần nhiều
+  AUDIT con do giới hạn 30.000; không cam kết mức giảm cố định trên game thật.
+- Không đo tốc độ Gemini đăng nhập hoặc mức lag Chrome trên máy người dùng.
+  Thời gian model trả lời, chế độ Fast/Thinking, mạng và RAM vẫn ảnh hưởng.
+  Không tự tăng worker hay đổi model/tài khoản; giữ cấu hình người dùng.
+
+Kiểm chứng:
+- 52/52 script hồi quy không cần màn hình đạt.
+- 8 ca mới về cache hiển thị, đổi row/rules lồng nhau, chuyển trang/sắp xếp,
+  gom audit đủ từng câu, Dừng lưu tất cả bản nháp/AUDIT-only khi tiếp tục,
+  giảm cỡ audit khi phản hồi hỏng và giữ đủ guard stream hai giây.
+- 3 script GUI thật đạt: 5 ca review mới; 4 ca export/cancel/failed export/
+  dialog thread trước đây; 1 script combobox filter. Có heartbeat trong lúc
+  DB bị worker giữ khóa; sửa metadata owner/khóa đổi thì badge đổi đúng.
+- 13 ca Chromium/CDP/Quill đạt (9 editor + 4 cap 32.000).
+- GUI chạy trên Linux qua X.Org dummy 1.21.1.16, display 1920x1080; không
+  giả lập các widget Tk. Chưa chạy Windows hoặc Gemini live đăng nhập.
+- Runtime/vendor Windows trong ZIP giữ byte như bản trước. Log/request/
+  JSON luật của game người dùng không được đưa lên GitHub.
+
+Cập nhật:
+1. Dừng & lưu, đóng bản cũ.
+2. Giải nén RenPyVN_2.6.0.12_WebSpeedUI_COMPLETE.zip vào thư mục mới.
+3. Chạy RUN_TRANSLATOR.bat, kiểm tra tiêu đề 2.6.0.12-WebSpeedUI.
+4. Mở lại game cũ, giữ nguyên .renpyvn để tiếp tục bản nháp/khóa.
+5. Dùng Gemini: dịch + kiểm tra riêng • rule KHÓA. Giữ số worker hiện tại;
+   nếu Chrome ngốn RAM/đơ thì giảm số worker tại lượt chạy tiếp theo.
+6. Khi đợt dịch về nhưng còn chờ AUDIT, bản nháp đã lưu; đây chưa phải câu
+   sẵn sàng duyệt. Chỉ tính câu qua AUDIT khi đo tốc độ.
+
+Kiểm thử phát triển:
+PYTHONPATH=. python tests/test_web_speed_ui_2612.py
+DISPLAY=<virtual display> PYTHONPATH=. python tests/test_live_review_ui_2612.py
+DISPLAY=<virtual display> PYTHONPATH=. python tests/benchmark_review_2612.py
+Trên Windows có desktop, không cần DISPLAY. Linux cần Xvfb hoặc X.Org dummy.
+Có thể đặt LOCALAPPDATA tới thư mục test tạm để cách ly settings.
+Browser tests cần Chromium/Playwright cho dev; app dùng runtime/CDP kèm ZIP.
